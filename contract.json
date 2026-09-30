@@ -1,20 +1,83 @@
 {
+  "$schema": "./schema/book-platform.contract.v1.schema.json",
   "schema_version": "book-platform.contract.v1",
   "platform_id": "data",
   "repository": "book-data-platform",
   "status": "scaffolded",
   "api_version": "v1",
   "data_owner": "book-data-platform",
-  "capabilities": ["platform-api", "health", "contract"],
-  "depends_on": [],
+  "capabilities": [
+    "event-ingress",
+    "lake-contract",
+    "query",
+    "analytics",
+    "lineage"
+  ],
+  "depends_on": [
+    "security",
+    "observability"
+  ],
   "current_implementation": {
     "repository": "solo-empire",
-    "source_path": "infra/scripts/data_lake"
+    "source_path": "infra/scripts/data_lake",
+    "source_paths": [
+      "infra/scripts/data_lake",
+      "systems/ai-data/data-lake-architecture.md"
+    ],
+    "source_status": "current-implementation-in-solo-empire"
   },
   "migration": {
     "compatibility_adapter": "required",
     "shadow_parity": "pending",
     "cutover": "pending",
     "rollback": "required"
-  }
+  },
+  "migration_gates": [
+    "bronze parity",
+    "schema versioning",
+    "replay evidence"
+  ],
+  "surface_doc": "docs/CONTRACT-SURFACE.md",
+  "interfaces": [
+    {
+      "id": "data.cli.ingest",
+      "kind": "cli",
+      "direction": "provides",
+      "name": "python infra/scripts/data_lake/ingest.py --input --source --domain --dataset",
+      "status": "current-in-solo-empire",
+      "source": "infra/scripts/data_lake/ingest.py"
+    },
+    {
+      "id": "data.object-store.landing",
+      "kind": "object-store",
+      "direction": "provides",
+      "name": "landing/source=<source>[/provider=<p>]/batch_id=<id>/payload.<ext>",
+      "status": "current-in-solo-empire",
+      "source": "infra/scripts/data_lake/ingest.py"
+    },
+    {
+      "id": "data.object-store.bronze",
+      "kind": "object-store",
+      "direction": "provides",
+      "name": "bronze/domain=<d>/dataset=<ds>/schema_version=<v>/ingest_date=<date>/source=<s>/part-<batch>.parquet",
+      "status": "current-in-solo-empire",
+      "source": "infra/scripts/data_lake/parquet.py"
+    },
+    {
+      "id": "data.object-store.manifest",
+      "kind": "object-store",
+      "direction": "provides",
+      "name": "control/manifests/source=<source>/batch_id=<id>.json",
+      "status": "current-in-solo-empire",
+      "source": "infra/scripts/data_lake/ingest.py"
+    },
+    {
+      "id": "data.object-store.checkpoint",
+      "kind": "object-store",
+      "direction": "provides",
+      "name": "control/checkpoints/source=<source>/batch_id=<id>.json",
+      "status": "current-in-solo-empire",
+      "source": "infra/scripts/data_lake/ingest.py"
+    }
+  ]
 }
